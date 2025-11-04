@@ -1,0 +1,261 @@
+Public Equities Research Analyst - Architecture Plan
+Core Concept
+A multi-agent system that conducts comprehensive equity research, combining fundamental analysis, technical analysis, sentiment analysis, and risk assessment.
+________________________________________
+1. AGENTS (Multiple Specialized Agents)
+A. Master Research Analyst Agent
+•	Role: Orchestrates research, delegates to specialist agents, synthesizes findings
+•	Tools: All specialist tools + workflow execution
+•	Workflows: Full research workflow, quick analysis workflow
+•	Memory: Remembers user portfolio, investment thesis, risk tolerance
+B. Fundamental Analyst Agent
+•	Role: Financial statement analysis, valuation, business model assessment
+•	Tools: Financial data tools, SEC filing tools, earnings tools
+•	Workflows: DCF valuation, comparable company analysis
+•	Specialization: Balance sheets, income statements, cash flow analysis
+C. Technical Analyst Agent
+•	Role: Chart patterns, indicators, price action analysis
+•	Tools: Price data, volume data, technical indicator calculators
+•	Workflows: Trend analysis, support/resistance identification
+•	Specialization: Moving averages, RSI, MACD, Fibonacci levels
+D. Sentiment & News Analyst Agent
+•	Role: News sentiment, social media sentiment, analyst ratings
+•	Tools: News APIs, Twitter/Reddit sentiment, analyst ratings aggregators
+•	Workflows: Sentiment scoring, event impact analysis
+•	Specialization: NLP for financial news, sentiment scoring
+E. Risk Assessment Agent
+•	Role: Portfolio risk, sector exposure, correlation analysis
+•	Tools: Risk metrics calculators, portfolio analytics
+•	Workflows: VaR calculation, stress testing
+•	Specialization: Beta, volatility, drawdown analysis
+________________________________________
+2. TOOLS (Data Access Layer)
+Market Data Tools
+- getStockPrice - Real-time/historical prices
+- getStockVolume - Trading volume data
+- getMarketCap - Market capitalization
+- getStockSplit - Split history
+- getDividendHistory - Dividend payments
+Fundamental Data Tools
+- getIncomeStatement - Quarterly/annual income statements
+- getBalanceSheet - Balance sheet data
+- getCashFlowStatement - Cash flow statements
+- getFinancialRatios - P/E, P/B, ROE, etc.
+- getEarningsData - EPS, earnings surprises, guidance
+- getSECFilings - 10-K, 10-Q, 8-K filings
+Technical Analysis Tools
+- calculateMovingAverage - SMA, EMA
+- calculateRSI - Relative Strength Index
+- calculateMACD - MACD indicator
+- calculateBollingerBands - Volatility bands
+- identifyChartPatterns - Head & shoulders, triangles, etc.
+News & Sentiment Tools
+- getCompanyNews - Recent news articles
+- getAnalystRatings - Buy/sell/hold ratings
+- getSocialSentiment - Twitter/Reddit sentiment
+- getInsiderTrading - Insider buy/sell activity
+- getEarningsCallTranscript - Earnings call transcripts
+Screening & Comparison Tools
+- screenStocks - Filter by criteria (P/E, growth, etc.)
+- compareCompanies - Side-by-side comparison
+- getSectorPeers - Identify competitors
+- getETFHoldings - ETF composition analysis
+________________________________________
+3. WORKFLOWS (Multi-Step Processes)
+A. Full Research Report Workflow
+Steps:
+1. fetchCompanyOverview - Basic company info
+2. fundamentalAnalysis - Run fundamental analyst
+3. technicalAnalysis - Run technical analyst  
+4. sentimentAnalysis - Run sentiment analyst
+5. riskAssessment - Run risk analyst
+6. synthesizeReport - Master analyst combines all findings
+7. generateInvestmentThesis - Final recommendation
+Output: Comprehensive PDF/markdown research report
+B. Quick Analysis Workflow
+Steps:
+1. fetchCurrentPrice - Get latest price
+2. quickMetrics - P/E, P/B, 52-week range
+3. recentNews - Last 3 days of news
+4. analystConsensus - Average rating
+5. generateQuickSummary - 1-paragraph summary
+Output: Quick snapshot for rapid decision-making
+C. Valuation Workflow
+Steps:
+1. fetchFinancials - Get financial statements
+2. calculateDCF - Discounted cash flow model
+3. calculateComparables - P/E, P/S multiples vs peers
+4. calculatePEG - PEG ratio analysis
+5. synthesizeValuation - Fair value estimate
+Output: Target price range with confidence intervals
+D. Earnings Event Workflow
+Steps:
+1. fetchEarningsData - Actual vs estimates
+2. analyzeEarningsCall - Transcript sentiment
+3. compareGuidance - Forward guidance analysis
+4. marketReaction - Price movement analysis
+5. updateThesis - Adjust investment thesis
+Output: Earnings event impact assessment
+E. Portfolio Analysis Workflow
+Steps:
+1. fetchPortfolioHoldings - User current positions
+2. calculateReturns - Performance metrics
+3. assessRisk - Portfolio risk metrics
+4. identifyOpportunities - Rebalancing suggestions
+5. generateReport - Portfolio health report
+Output: Portfolio recommendations
+________________________________________
+4. MEMORY SYSTEM
+Working Memory (User Preferences)
+- Investment style: Growth, Value, Dividend, Momentum
+- Risk tolerance: Conservative, Moderate, Aggressive
+- Time horizon: Short-term, Medium-term, Long-term
+- Sector preferences: Tech-heavy, diversified, ESG-focused
+- Portfolio holdings: Current positions and cost basis
+Semantic Recall (Historical Context)
+- Past analyses on specific stocks
+- Previous valuations and how they changed
+- Historical conversations about sectors
+- Investment decisions made and rationale
+- Performance tracking of recommendations
+Conversation History
+- Recent stock discussions
+- Questions asked in current session
+- Context for follow-up questions
+________________________________________
+5. DATA SOURCES & APIs
+Free/Freemium APIs
+•	Alpha Vantage - Stock prices, technical indicators
+•	Yahoo Finance (via yfinance) - Historical data, financials
+•	SEC EDGAR - Official filings
+•	Financial Modeling Prep - Comprehensive financial data
+•	News API - Financial news aggregation
+Premium APIs (Optional upgrades)
+•	Bloomberg API - Professional-grade data
+•	Refinitiv - Real-time market data
+•	FactSet - Institutional research
+•	Koyfin - Advanced analytics
+________________________________________
+6. KNOWLEDGE BASE (RAG)
+Financial Concepts DB
+- Accounting principles (GAAP, IFRS)
+- Valuation methodologies
+- Technical analysis patterns
+- Economic
+Regulatory Knowledge
+- SEC regulations
+- Insider trading rules
+- Disclosure requirements
+- Market structure
+Historical Patterns
+- Market cycles
+- Sector rotations
+- Recession indicators
+- Bull/bear market characteristics
+________________________________________
+7. PROJECT STRUCTURE
+equities-analyst/
+├── src/
+│   ├── mastra/
+│   │   ├── agents/
+│   │   │   ├── master-analyst.ts
+│   │   │   ├── fundamental-analyst.ts
+│   │   │   ├── technical-analyst.ts
+│   │   │   ├── sentiment-analyst.ts
+│   │   │   └── risk-analyst.ts
+│   │   ├── tools/
+│   │   │   ├── market-data.ts
+│   │   │   ├── fundamental-data.ts
+│   │   │   ├── technical-indicators.ts
+│   │   │   ├── news-sentiment.ts
+│   │   │   └── screening.ts
+│   │   ├── workflows/
+│   │   │   ├── full-research.ts
+│   │   │   ├── quick-analysis.ts
+│   │   │   ├── valuation.ts
+│   │   │   ├── earnings-event.ts
+│   │   │   └── portfolio-analysis.ts
+│   │   ├── rag/
+│   │   │   ├── financial-concepts.ts
+│   │   │   ├── regulatory-knowledge.ts
+│   │   │   └── historical-patterns.ts
+│   │   └── index.ts
+│   └── utils/
+│       ├── calculators.ts (financial calculations)
+│       ├── formatters.ts (report formatting)
+│       └── validators.ts (input validation)
+├── data/
+│   ├── financial-concepts/ (embeddings)
+│   ├── company-filings/ (cached SEC filings)
+│   └── historical-analyses/ (past research)
+└── tests/
+    ├── tools.test.ts
+    ├── workflows.test.ts
+    └── agents.test.ts
+________________________________________
+8. KEY FEATURES
+Interactive Capabilities
+•	"Analyze AAPL for me"
+•	"Compare MSFT vs GOOGL"
+•	"What's your take on tech sector?"
+•	"Should I add this to my portfolio?"
+•	"Explain why you rated this a buy"
+Automated Research
+•	Daily watchlist updates
+•	Earnings calendar tracking
+•	Portfolio alerts (price targets hit, news events)
+•	Scheduled sector reviews
+Report Generation
+•	PDF research reports
+•	Executive summaries
+•	Markdown documentation
+•	Shareable investment memos
+________________________________________
+9. ADVANCED FEATURES
+Backtesting
+•	Test investment strategies historically
+•	Track recommendation performance
+•	Learn from past predictions
+Portfolio Optimization
+•	Modern Portfolio Theory
+•	Risk-adjusted returns
+•	Rebalancing suggestions
+Alert System
+•	Price alerts
+•	News alerts
+•	Technical signal alerts
+•	Earnings date reminders
+Collaboration
+•	Share research with team
+•	Collaborative notes
+•	Discussion threads on stocks
+________________________________________
+10. IMPLEMENTATION PHASES
+Phase 1: MVP (Week 1-2)
+•	Single master analyst agent
+•	Basic tools (price, financials, news)
+•	Quick analysis workflow
+•	Simple conversation memory
+Phase 2: Specialized Agents (Week 3-4)
+•	Add fundamental, technical, sentiment agents
+•	Full research workflow
+•	Enhanced memory with preferences
+•	Basic report generation
+Phase 3: Advanced Features (Week 5-6)
+•	Valuation workflows
+•	Portfolio analysis
+•	RAG knowledge base
+•	Semantic recall
+Phase 4: Production (Week 7-8)
+•	Alert system
+•	Scheduled tasks
+•	Performance tracking
+•	Testing and refinement
+________________________________________
+Tech Stack
+•	Framework: Mastra
+•	Language: TypeScript
+•	Database: LibSQL (SQLite) for memory
+•	Vector DB: Qdrant or Pinecone for RAG
+•	APIs: Alpha Vantage, Yahoo Finance, SEC EDGAR
+•	Deployment: Docker + Railway/Render

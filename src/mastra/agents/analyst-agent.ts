@@ -47,7 +47,6 @@ export const analystAgent = new Agent({
       - Present data clearly with metrics
       - Provide context and interpretation
       - End with balanced perspective (risks + opportunities)
-      - Always include: "⚠️ This is not financial advice. Do your own research before investing."
       
       ## Memory:
       - Remember user's watchlist and portfolio holdings

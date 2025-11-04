@@ -49,6 +49,31 @@ Professional equity research agent for analyzing public stocks.
 **Workflows:**
 - `equityAnalysisWorkflow` - Complete fundamental analysis pipeline
 
+### 3. Fundamental Analyst
+Specialized agent for deep financial statement analysis and valuation.
+
+**Capabilities:**
+- Latest financial data analysis (revenue, expenses, profitability)
+- Balance sheet analysis (assets, liabilities, cash, debt)
+- Cash flow analysis (operating, free cash flow)
+- Comprehensive financial ratio analysis
+- DCF (Discounted Cash Flow) valuation with real calculations
+- Comparable company analysis
+- Business model assessment
+
+**Note:** Due to Yahoo Finance API changes (Nov 2024), historical multi-year statements are no longer available. All tools fetch the latest fiscal period data.
+
+**Tools:**
+- `getFinancialsTool` - Quick key metrics overview
+- `getLatestFinancialsDetailedTool` - Detailed current income metrics, margins, growth rates
+- `getBalanceSheetTool` - Current assets, liabilities, cash, debt, liquidity ratios
+- `getCashFlowTool` - Latest operating and free cash flow data
+- `getFinancialRatiosTool` - Profitability, liquidity, leverage, valuation ratios (all categories)
+
+**Workflows:**
+- `dcfValuationWorkflow` - Calculate intrinsic value using DCF model with **real calculations** (not AI estimates)
+- `comparableAnalysisWorkflow` - Valuation vs peer companies with actual peer data
+
 ## Setup
 
 1. Copy `.env.example` to `.env` and fill in your API keys.
@@ -65,15 +90,18 @@ Professional equity research agent for analyzing public stocks.
 ```
 src/mastra/
 ├── agents/
-│   ├── index.ts              # Weather Agent
-│   └── analyst-agent.ts      # Equity Research Analyst
+│   ├── index.ts                  # Weather Agent
+│   ├── analyst-agent.ts          # Equity Research Analyst
+│   └── fundamental-analyst.ts    # Fundamental Analyst
 ├── tools/
-│   ├── index.ts              # Weather tools
-│   └── equity-tools.ts       # Stock market tools
+│   ├── index.ts                  # Weather tools
+│   ├── equity-tools.ts           # Stock market tools
+│   └── fundamental-tools.ts      # Financial statement tools
 ├── workflows/
-│   ├── index.ts              # Weather workflow
-│   └── equity-workflow.ts    # Equity analysis workflow
-└── index.ts                  # Main Mastra configuration
+│   ├── index.ts                  # Weather workflow
+│   ├── equity-workflow.ts        # Equity analysis workflow
+│   └── valuation-workflows.ts    # DCF & comparable analysis
+└── index.ts                      # Main Mastra configuration
 ```
 
 ## Example Usage
@@ -97,6 +125,21 @@ Agent: Uses getStockPriceTool → Returns real-time price data
 
 User: "Get financial metrics for GOOGL"
 Agent: Uses getFinancialsTool → Returns P/E, margins, growth rates
+```
+
+### Fundamental Analyst
+```
+User: "Analyze AAPL's financial statements"
+Agent: Uses income statement, balance sheet, cash flow tools → Deep financial analysis
+
+User: "What's TSLA's intrinsic value?"
+Agent: Runs dcfValuationWorkflow → DCF valuation with fair value estimate
+
+User: "Compare NVDA's valuation to its peers"
+Agent: Runs comparableAnalysisWorkflow → Peer comparison analysis
+
+User: "Get financial ratios for META"
+Agent: Uses getFinancialRatiosTool → Comprehensive ratio analysis
 ```
 
 ## Features

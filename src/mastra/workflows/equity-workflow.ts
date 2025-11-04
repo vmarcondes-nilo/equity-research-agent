@@ -4,7 +4,7 @@ import { createStep, createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
 import YahooFinance from 'yahoo-finance2';
 
-const yf = new YahooFinance();
+const yf = new YahooFinance({ suppressNotices: ['yahooSurvey'] });
 
 const llm = openai('gpt-4o');
 
@@ -169,10 +169,17 @@ const fetchFinancials = createStep({
     
     try {
       const quote = await yf.quote(ticker);
+      const summary = await yf.quoteSummary(ticker, { 
+        modules: ['financialData', 'defaultKeyStatistics', 'summaryDetail'] 
+      });
       
       if (!quote) {
         throw new Error(`Financial data not found for ${ticker}`);
       }
+      
+      const financialData = summary.financialData || ({} as any);
+      const keyStats = summary.defaultKeyStatistics || ({} as any);
+      const summaryDetail = summary.summaryDetail || ({} as any);
       
       return {
         ticker,
@@ -189,13 +196,13 @@ const fetchFinancials = createStep({
         },
         financials: {
           companyName: quote.longName || quote.shortName || ticker,
-          peRatio: quote.trailingPE || null,
-          eps: quote.epsTrailingTwelveMonths || null,
+          peRatio: summaryDetail.trailingPE || null,
+          eps: keyStats.trailingEps || null,
           dividendYield: quote.dividendYield ? quote.dividendYield * 100 : null,
-          profitMargin: quote.profitMargins ? quote.profitMargins * 100 : null,
-          debtToEquity: (quote as any).debtToEquity || null,
-          revenueGrowth: quote.revenueGrowth ? quote.revenueGrowth * 100 : null,
-          beta: quote.beta || null,
+          profitMargin: financialData.profitMargins ? financialData.profitMargins * 100 : null,
+          debtToEquity: financialData.debtToEquity || null,
+          revenueGrowth: financialData.revenueGrowth ? financialData.revenueGrowth * 100 : null,
+          beta: keyStats.beta || null,
         },
       };
     } catch (error) {
