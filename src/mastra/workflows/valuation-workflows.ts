@@ -19,6 +19,9 @@ import { z } from 'zod';
 import { getCashFlowTool, getBalanceSheetTool, getFinancialRatiosTool } from '../tools/fundamental-tools';
 import { getStockPriceTool, getFinancialsTool } from '../tools/equity-tools';
 
+// Import the quantitative DCF calculator
+import { calculateDCF, assessValuation, formatDCFResults } from '../lib/dcf-calculator';
+
 // Initialize OpenAI model for AI-powered analysis
 const llm = openai('gpt-4o');
 
@@ -134,19 +137,20 @@ const fetchDCFData = createStep({
 // ============================================================================
 // DCF VALUATION WORKFLOW - STEP 2: CALCULATE & ANALYZE
 // ============================================================================
-// This step takes the financial data and uses AI to perform DCF analysis.
-// The AI agent will:
-// 1. Project future free cash flows (typically 5-10 years)
+// This step performs REAL quantitative DCF analysis using mathematical formulas:
+// 1. Project future free cash flows for 5 years
 // 2. Calculate terminal value (value beyond projection period)
 // 3. Discount all cash flows to present value using WACC
 // 4. Adjust for net debt to get equity value
 // 5. Divide by shares to get intrinsic value per share
-// 6. Provide Bear/Base/Bull scenarios and sensitivity analysis
+// 6. Provide Bear/Base/Bull scenarios via sensitivity analysis
+//
+// NEW: This now uses the quantitative DCF calculator instead of AI guessing!
 // ============================================================================
-const calculateDCF = createStep({
+const calculateDCFStep = createStep({
   id: 'calculate-dcf',
-  description: 'Calculates intrinsic value using DCF model',
-  
+  description: 'Calculates intrinsic value using quantitative DCF model',
+
   // INPUT: All the financial data from the previous step
   inputSchema: z.object({
     ticker: z.string(),
@@ -158,49 +162,78 @@ const calculateDCF = createStep({
     revenueGrowth: z.number().nullable(),
     marketCap: z.string(),
   }),
-  
+
   // OUTPUT: A comprehensive valuation analysis as text
   outputSchema: z.object({
     valuation: z.string(),
   }),
-  
+
   execute: async ({ inputData }) => {
     if (!inputData) {
       throw new Error('Input data not found');
     }
 
-    // Build a detailed prompt for the AI valuation agent
-    // We format all the financial data clearly and provide DCF methodology
-    const prompt = `Perform a DCF (Discounted Cash Flow) valuation for ${inputData.ticker} using the following data:
+    // ========== VALIDATE INPUT DATA ==========
+    // DCF requires certain core data points to work
+    if (!inputData.freeCashFlow || inputData.freeCashFlow <= 0) {
+      throw new Error(
+        `Cannot perform DCF for ${inputData.ticker}: Free Cash Flow data is missing or negative. ` +
+        `DCF requires positive free cash flow to project future values.`
+      );
+    }
 
-FINANCIAL DATA:
-- Current Stock Price: $${inputData.currentPrice.toFixed(2)}
-- Market Cap: ${inputData.marketCap}
-- Free Cash Flow (Latest): $${inputData.freeCashFlow ? (inputData.freeCashFlow / 1e9).toFixed(2) : 'N/A'}B
-- Total Debt: $${inputData.totalDebt ? (inputData.totalDebt / 1e9).toFixed(2) : 'N/A'}B
-- Cash: $${inputData.cash ? (inputData.cash / 1e9).toFixed(2) : 'N/A'}B
-- Shares Outstanding: ${inputData.sharesOutstanding ? (inputData.sharesOutstanding / 1e9).toFixed(2) : 'N/A'}B
-- Revenue Growth Rate: ${inputData.revenueGrowth?.toFixed(2) || 'N/A'}%
+    if (!inputData.sharesOutstanding || inputData.sharesOutstanding <= 0) {
+      throw new Error(
+        `Cannot perform DCF for ${inputData.ticker}: Shares outstanding data is missing or invalid.`
+      );
+    }
 
-Calculate intrinsic value using DCF with:
-1. Project free cash flows for 5-10 years
-2. Use reasonable growth assumptions based on historical growth
-3. Apply appropriate discount rate (WACC, typically 8-12%)
-4. Calculate terminal value
-5. Discount to present value
-6. Subtract net debt, divide by shares outstanding
+    // Parse market cap string to number
+    // Format is like "$2.5T" or "$850.2B" or "$5.3M"
+    const marketCapNum = parseFloat(inputData.marketCap.replace(/[$,]/g, '')) *
+      (inputData.marketCap.includes('T') ? 1e12 :
+       inputData.marketCap.includes('B') ? 1e9 :
+       inputData.marketCap.includes('M') ? 1e6 : 1);
 
-Provide:
-- Intrinsic Value Estimate (per share)
-- Fair Value Range (Bear/Base/Bull scenarios)
-- Key Assumptions Used
-- Sensitivity Analysis (what if growth is ±2%?)
-- Valuation vs Current Price (Upside/Downside %)
-- Investment Recommendation
+    // ========== PERFORM QUANTITATIVE DCF CALCULATION ==========
+    // This uses real mathematical formulas, not AI estimation
+    const dcfResults = calculateDCF({
+      freeCashFlow: inputData.freeCashFlow,
+      totalDebt: inputData.totalDebt || 0,
+      cash: inputData.cash || 0,
+      sharesOutstanding: inputData.sharesOutstanding,
+      marketCap: marketCapNum,
+      revenueGrowth: inputData.revenueGrowth || undefined,
+      // Use defaults for discount rate and terminal growth
+      // (calculator will determine appropriate WACC based on market cap)
+    });
 
-Format the analysis clearly with numbers and explanations.`;
+    // Add current price comparison and recommendation
+    const valuation = assessValuation(dcfResults.intrinsicValue, inputData.currentPrice);
+    Object.assign(dcfResults, valuation);
 
-    // Send the prompt to the valuation agent and stream the response
+    // ========== FORMAT RESULTS FOR DISPLAY ==========
+    // Convert calculation results into human-readable format
+    const formattedResults = formatDCFResults(dcfResults);
+
+    // ========== USE AI TO PROVIDE INTERPRETATION ==========
+    // Now that we have real numbers, ask AI to interpret and explain them
+    const prompt = `You are a valuation expert. A DCF (Discounted Cash Flow) analysis has been completed for ${inputData.ticker}.
+
+Below are the ACTUAL CALCULATED RESULTS from a quantitative DCF model using real financial formulas:
+
+${formattedResults}
+
+Your task is to:
+1. Explain what these numbers mean in plain language
+2. Highlight the key insights (is it undervalued/overvalued? by how much?)
+3. Discuss the reliability of the valuation (are the assumptions reasonable?)
+4. Explain what would need to change for the bull/bear scenarios to play out
+5. Provide investment guidance based on the quantitative results
+
+IMPORTANT: These are REAL CALCULATED values, not estimates. Don't recalculate - instead, interpret and explain the results.`;
+
+    // Get AI interpretation of the quantitative results
     const response = await valuationAgent.streamLegacy([
       {
         role: 'user',
@@ -208,17 +241,27 @@ Format the analysis clearly with numbers and explanations.`;
       },
     ]);
 
-    // Collect the streamed response chunks into a full text
-    let valuationText = '';
-
+    // Collect the interpretation
+    let interpretation = '';
     for await (const chunk of response.textStream) {
       process.stdout.write(chunk);  // Display in real-time
-      valuationText += chunk;        // Build the full response
+      interpretation += chunk;       // Build the full response
     }
+
+    // ========== COMBINE QUANTITATIVE RESULTS + AI INTERPRETATION ==========
+    const fullAnalysis = `
+=== DCF VALUATION FOR ${inputData.ticker} ===
+
+${formattedResults}
+
+=== ANALYSIS & INTERPRETATION ===
+
+${interpretation}
+`;
 
     // Return the complete valuation analysis
     return {
-      valuation: valuationText,
+      valuation: fullAnalysis,
     };
   },
 });
@@ -236,19 +279,19 @@ Format the analysis clearly with numbers and explanations.`;
 // ============================================================================
 export const dcfValuationWorkflow = createWorkflow({
   id: 'dcf-valuation-workflow',
-  
+
   // INPUT: Just a ticker symbol
   inputSchema: z.object({
     ticker: z.string().describe('Stock ticker symbol to value'),
   }),
-  
+
   // OUTPUT: Complete valuation analysis as text
   outputSchema: z.object({
     valuation: z.string(),
   }),
 })
-  .then(fetchDCFData)      // Step 1: Fetch financial data
-  .then(calculateDCF);      // Step 2: Calculate DCF and generate analysis
+  .then(fetchDCFData)         // Step 1: Fetch financial data
+  .then(calculateDCFStep);    // Step 2: Calculate DCF using real math + AI interpretation
 
 // Commit the workflow to make it executable
 dcfValuationWorkflow.commit();

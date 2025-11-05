@@ -15,8 +15,8 @@ importers:
         specifier: latest
         version: 0.23.3(openapi-types@12.1.3)(react@19.2.0)(zod@3.25.76)
       '@mastra/evals':
-        specifier: ^0.14.2
-        version: 0.14.2(@mastra/core@0.23.3(openapi-types@12.1.3)(react@19.2.0)(zod@3.25.76))(ai@5.0.76(zod@3.25.76))(zod@3.25.76)
+        specifier: ^0.14.3
+        version: 0.14.3(@mastra/core@0.23.3(openapi-types@12.1.3)(react@19.2.0)(zod@3.25.76))(ai@5.0.76(zod@3.25.76))(zod@3.25.76)
       '@mastra/libsql':
         specifier: ^0.16.1
         version: 0.16.1(@mastra/core@0.23.3(openapi-types@12.1.3)(react@19.2.0)(zod@3.25.76))
@@ -29,6 +29,9 @@ importers:
       '@mastra/memory':
         specifier: ^0.15.10
         version: 0.15.10(@mastra/core@0.23.3(openapi-types@12.1.3)(react@19.2.0)(zod@3.25.76))(react@19.2.0)(zod@3.25.76)
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
       yahoo-finance2:
         specifier: ^3.10.0
         version: 3.10.0
@@ -567,10 +570,10 @@ packages:
       '@mastra/core': '>=0.22.1-0 <0.24.0-0'
       zod: ^3.25.0 || ^4.0.0
 
-  '@mastra/evals@0.14.2':
-    resolution: {integrity: sha512-ViMtTcSZkBsDW5oljjVE+928W/Ts7dCnblUrEjOSxrNHD3coNHsmiHK+350rYCRy/EtCmplVUebTS5SjckyjJA==}
+  '@mastra/evals@0.14.3':
+    resolution: {integrity: sha512-LH0dyF3xOnTXynXWiJs7QKpS0oRrWXmBJ/DuAjCwl6zNYvfpYIyPM6mR7v19JRQPMpEpgY5WFiaws+XnRE3pGw==}
     peerDependencies:
-      '@mastra/core': '>=0.21.0-0 <0.24.0-0'
+      '@mastra/core': '>=0.21.0-0 <0.25.0-0'
       ai: ^4.0.0 || ^5.0.0
       zod: ^3.25.0 || ^4.0.0
 
@@ -1803,6 +1806,10 @@ packages:
 
   dotenv@16.6.1:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
+    engines: {node: '>=12'}
+
+  dotenv@17.2.3:
+    resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
     engines: {node: '>=12'}
 
   dunder-proto@1.0.1:
@@ -3802,7 +3809,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@mastra/evals@0.14.2(@mastra/core@0.23.3(openapi-types@12.1.3)(react@19.2.0)(zod@3.25.76))(ai@5.0.76(zod@3.25.76))(zod@3.25.76)':
+  '@mastra/evals@0.14.3(@mastra/core@0.23.3(openapi-types@12.1.3)(react@19.2.0)(zod@3.25.76))(ai@5.0.76(zod@3.25.76))(zod@3.25.76)':
     dependencies:
       '@mastra/core': 0.23.3(openapi-types@12.1.3)(react@19.2.0)(zod@3.25.76)
       ai: 5.0.76(zod@3.25.76)
@@ -5204,6 +5211,8 @@ snapshots:
       heap: 0.2.7
 
   dotenv@16.6.1: {}
+
+  dotenv@17.2.3: {}
 
   dunder-proto@1.0.1:
     dependencies:
