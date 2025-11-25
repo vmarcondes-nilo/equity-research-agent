@@ -251,33 +251,75 @@ const fetchAnalystRatings = createStep({
   },
 });
 
+// Shared schema definitions for consistency
+const newsItemSchema = z.object({
+  title: z.string(),
+  publisher: z.string(),
+  publishedDate: z.string(),
+  summary: z.string().optional(),
+});
+
+const analystRatingsSchema = z.object({
+  currentRating: z.string().optional(),
+  targetPrice: z.number().nullable(),
+  numberOfAnalysts: z.number(),
+  ratings: z.object({
+    strongBuy: z.number(),
+    buy: z.number(),
+    hold: z.number(),
+    sell: z.number(),
+    strongSell: z.number(),
+  }),
+  consensus: z.string(),
+});
+
+const insiderTradingSchema = z.object({
+  transactions: z.array(z.object({
+    name: z.string(),
+    position: z.string(),
+    transactionType: z.string(),
+    shares: z.number(),
+    date: z.string(),
+  })),
+  summary: z.object({
+    totalBuys: z.number(),
+    totalSells: z.number(),
+    netSentiment: z.string(),
+  }),
+});
+
+const upgradeDowngradeSchema = z.object({
+  events: z.array(z.object({
+    firm: z.string(),
+    action: z.string(),
+    toGrade: z.string(),
+    date: z.string(),
+  })),
+  recentSentiment: z.string(),
+});
+
+const earningsSchema = z.object({
+  reportDate: z.string(),
+  epsActual: z.number().nullable(),
+  epsEstimate: z.number().nullable(),
+  epsSurprisePercent: z.number().nullable(),
+  sentiment: z.string(),
+});
+
 // Step 3: Fetch Insider Trading
 const fetchInsiderTrading = createStep({
   id: 'fetch-insider-trading',
   description: 'Fetches insider trading activity',
   inputSchema: z.object({
     ticker: z.string(),
-    news: z.array(z.any()),
-    analystRatings: z.any(),
+    news: z.array(newsItemSchema),
+    analystRatings: analystRatingsSchema,
   }),
   outputSchema: z.object({
     ticker: z.string(),
-    news: z.array(z.any()),
-    analystRatings: z.any(),
-    insiderTrading: z.object({
-      transactions: z.array(z.object({
-        name: z.string(),
-        position: z.string(),
-        transactionType: z.string(),
-        shares: z.number(),
-        date: z.string(),
-      })),
-      summary: z.object({
-        totalBuys: z.number(),
-        totalSells: z.number(),
-        netSentiment: z.string(),
-      }),
-    }),
+    news: z.array(newsItemSchema),
+    analystRatings: analystRatingsSchema,
+    insiderTrading: insiderTradingSchema,
   }),
   execute: async ({ inputData }) => {
     if (!inputData) {
@@ -366,24 +408,16 @@ const fetchUpgradeDowngrade = createStep({
   description: 'Fetches analyst upgrade and downgrade history',
   inputSchema: z.object({
     ticker: z.string(),
-    news: z.array(z.any()),
-    analystRatings: z.any(),
-    insiderTrading: z.any(),
+    news: z.array(newsItemSchema),
+    analystRatings: analystRatingsSchema,
+    insiderTrading: insiderTradingSchema,
   }),
   outputSchema: z.object({
     ticker: z.string(),
-    news: z.array(z.any()),
-    analystRatings: z.any(),
-    insiderTrading: z.any(),
-    upgradeDowngrade: z.object({
-      events: z.array(z.object({
-        firm: z.string(),
-        action: z.string(),
-        toGrade: z.string(),
-        date: z.string(),
-      })),
-      recentSentiment: z.string(),
-    }),
+    news: z.array(newsItemSchema),
+    analystRatings: analystRatingsSchema,
+    insiderTrading: insiderTradingSchema,
+    upgradeDowngrade: upgradeDowngradeSchema,
   }),
   execute: async ({ inputData }) => {
     if (!inputData) {
@@ -463,24 +497,18 @@ const fetchEarningsSentiment = createStep({
   description: 'Fetches earnings performance vs estimates',
   inputSchema: z.object({
     ticker: z.string(),
-    news: z.array(z.any()),
-    analystRatings: z.any(),
-    insiderTrading: z.any(),
-    upgradeDowngrade: z.any(),
+    news: z.array(newsItemSchema),
+    analystRatings: analystRatingsSchema,
+    insiderTrading: insiderTradingSchema,
+    upgradeDowngrade: upgradeDowngradeSchema,
   }),
   outputSchema: z.object({
     ticker: z.string(),
-    news: z.array(z.any()),
-    analystRatings: z.any(),
-    insiderTrading: z.any(),
-    upgradeDowngrade: z.any(),
-    earnings: z.object({
-      reportDate: z.string(),
-      epsActual: z.number().nullable(),
-      epsEstimate: z.number().nullable(),
-      epsSurprisePercent: z.number().nullable(),
-      sentiment: z.string(),
-    }),
+    news: z.array(newsItemSchema),
+    analystRatings: analystRatingsSchema,
+    insiderTrading: insiderTradingSchema,
+    upgradeDowngrade: upgradeDowngradeSchema,
+    earnings: earningsSchema,
   }),
   execute: async ({ inputData }) => {
     if (!inputData) {
@@ -497,9 +525,9 @@ const fetchEarningsSentiment = createStep({
       const earningsHistory = result.earningsHistory?.history || [];
       const latestEarnings = earningsHistory[0];
 
-      const epsActual = latestEarnings?.epsActual?.raw || null;
-      const epsEstimate = latestEarnings?.epsEstimate?.raw || null;
-      const epsSurprisePercent = latestEarnings?.surprisePercent?.raw || null;
+      const epsActual = latestEarnings?.epsActual ?? null;
+      const epsEstimate = latestEarnings?.epsEstimate ?? null;
+      const epsSurprisePercent = latestEarnings?.surprisePercent ?? null;
 
       let sentiment = 'Neutral';
       if (epsSurprisePercent !== null) {
@@ -517,7 +545,7 @@ const fetchEarningsSentiment = createStep({
       return {
         ...inputData,
         earnings: {
-          reportDate: latestEarnings?.quarterEnd?.fmt || 'Unknown',
+          reportDate: latestEarnings?.quarter ? `${latestEarnings.quarter}` : 'Unknown',
           epsActual,
           epsEstimate,
           epsSurprisePercent,
@@ -546,11 +574,11 @@ const synthesizeSentiment = createStep({
   description: 'Synthesizes all sentiment data into comprehensive analysis',
   inputSchema: z.object({
     ticker: z.string(),
-    news: z.array(z.any()),
-    analystRatings: z.any(),
-    insiderTrading: z.any(),
-    upgradeDowngrade: z.any(),
-    earnings: z.any(),
+    news: z.array(newsItemSchema),
+    analystRatings: analystRatingsSchema,
+    insiderTrading: insiderTradingSchema,
+    upgradeDowngrade: upgradeDowngradeSchema,
+    earnings: earningsSchema,
   }),
   outputSchema: z.object({
     analysis: z.string(),
