@@ -1,82 +1,111 @@
-# Multi-Agent AI System
+# Equity Research Agent
 
-This project demonstrates how to build AI-powered agents using the Mastra framework. It includes two specialized agents: a Weather Agent and an Equity Research Analyst.
+A multi-agent AI system for comprehensive equity research, built with the Mastra framework. Combines fundamental analysis, sentiment analysis, and risk assessment to produce institutional-quality investment research.
 
 ## Overview
 
-This template showcases how to:
+This project demonstrates how to:
 
-- Create multiple AI-powered agents using Mastra framework
-- Implement multi-step workflows for complex tasks
-- Handle user queries with specialized tools
-- Manage conversation memory and context
-- Integrate with external APIs for real-time data
-- Coordinate agents, tools, and workflows
+- Build multiple specialized AI agents for different analysis domains
+- Orchestrate agents through a master coordinator
+- Implement multi-step workflows for complex research tasks
+- Integrate with financial APIs for real-time market data
+- Generate comprehensive investment recommendations
 
 ## Agents
 
-### 1. Weather Agent
-Provides weather information and activity recommendations for any location.
+### 1. Master Research Analyst
+Senior analyst that orchestrates comprehensive investment research across all domains.
 
 **Capabilities:**
-- Current weather conditions (temperature, humidity, wind speed)
-- Activity recommendations based on weather
-- Multi-day itinerary planning
-- Location-specific suggestions
-
-**Tools:**
-- `weatherTool` - Fetches current weather data
-- `planActivitiesTool` - Generates activity recommendations
-
-**Workflows:**
-- `weatherWorkflow` - Complete weather + activity planning pipeline
+- Coordinates fundamental, sentiment, and risk analysis
+- Synthesizes findings into unified research reports
+- Generates investment recommendations with target prices
+- Handles quick overviews, standard analysis, and deep dives
 
 ### 2. Equity Research Analyst
-Professional equity research agent for analyzing public stocks.
+General-purpose equity analysis agent for quick stock lookups.
 
 **Capabilities:**
 - Real-time stock prices and market data
 - Financial metrics analysis (P/E, EPS, margins, growth rates)
-- Company news and sentiment monitoring
-- Comprehensive investment analysis
+- Company news monitoring
 - Multi-stock comparison
 
 **Tools:**
 - `getStockPriceTool` - Current price, volume, 52-week range, market cap
 - `getFinancialsTool` - Key financial ratios and metrics
-- `getCompanyNewsTool` - Recent news articles and press releases
-
-**Workflows:**
-- `equityAnalysisWorkflow` - Complete fundamental analysis pipeline
+- `getCompanyNewsTool` - Recent news articles
 
 ### 3. Fundamental Analyst
 Specialized agent for deep financial statement analysis and valuation.
 
 **Capabilities:**
-- Latest financial data analysis (revenue, expenses, profitability)
-- Balance sheet analysis (assets, liabilities, cash, debt)
-- Cash flow analysis (operating, free cash flow)
-- Comprehensive financial ratio analysis
-- DCF (Discounted Cash Flow) valuation with real calculations
+- Financial statement analysis (income, balance sheet, cash flow)
+- Comprehensive ratio analysis (profitability, liquidity, leverage, valuation)
+- DCF valuation with real mathematical calculations
 - Comparable company analysis
-- Business model assessment
-
-**Note:** Due to Yahoo Finance API changes (Nov 2024), historical multi-year statements are no longer available. All tools fetch the latest fiscal period data.
 
 **Tools:**
-- `getFinancialsTool` - Quick key metrics overview
-- `getLatestFinancialsDetailedTool` - Detailed current income metrics, margins, growth rates
-- `getBalanceSheetTool` - Current assets, liabilities, cash, debt, liquidity ratios
-- `getCashFlowTool` - Latest operating and free cash flow data
-- `getFinancialRatiosTool` - Profitability, liquidity, leverage, valuation ratios (all categories)
+- `getLatestFinancialsDetailedTool` - Detailed income metrics and margins
+- `getBalanceSheetTool` - Assets, liabilities, cash, debt, liquidity ratios
+- `getCashFlowTool` - Operating and free cash flow data
+- `getFinancialRatiosTool` - Complete 5-category ratio analysis
 
 **Workflows:**
-- `dcfValuationWorkflow` - Calculate intrinsic value using DCF model with **real calculations** (not AI estimates)
-- `comparableAnalysisWorkflow` - Valuation vs peer companies with actual peer data
+- `dcfValuationWorkflow` - Intrinsic value calculation with sensitivity analysis
+- `comparableAnalysisWorkflow` - Peer comparison valuation
+
+### 4. Sentiment Analyst
+Specialized agent for market sentiment and analyst opinion tracking.
+
+**Capabilities:**
+- News sentiment analysis
+- Analyst ratings and price target tracking
+- Insider trading activity monitoring
+- Upgrade/downgrade tracking
+- Earnings sentiment analysis
+
+**Tools:**
+- `getAnalystRatingsTool` - Wall Street ratings distribution, price targets
+- `getInsiderTradingTool` - Recent insider buys/sells
+- `getUpgradeDowngradeTool` - Analyst rating changes
+- `getEarningsSentimentTool` - Earnings beats/misses
+
+**Workflows:**
+- `sentimentAnalysisWorkflow` - Complete sentiment analysis pipeline
+
+### 5. Risk Analyst
+Specialized agent for risk assessment and volatility analysis.
+
+**Capabilities:**
+- Beta and market sensitivity analysis
+- Historical drawdown analysis
+- Sector and concentration risk
+- Short interest and squeeze risk assessment
+
+**Tools:**
+- `getBetaVolatilityTool` - Beta, moving averages, trend signals
+- `getDrawdownAnalysisTool` - Max drawdown, recovery metrics
+- `getSectorExposureTool` - Sector, industry, market cap category
+- `getShortInterestTool` - Short interest, squeeze risk assessment
+
+**Workflows:**
+- `riskAssessmentWorkflow` - Comprehensive risk analysis
+
+## Workflows
+
+### Full Research Workflow
+Complete 4-step research pipeline used by the Master Analyst:
+
+1. **Fetch Company Overview** - Basic context (price, sector, news)
+2. **Parallel Specialist Analysis** - Fundamental + Sentiment + Risk (9 tools in parallel)
+3. **Synthesize Research Report** - Combine findings, assign scores
+4. **Generate Investment Thesis** - Final rating, target price, bull/bear cases
 
 ## Setup
 
-1. Copy `.env.example` to `.env` and fill in your API keys.
+1. Copy `.env.example` to `.env` and add your OpenAI API key
 2. Install dependencies: `pnpm install`
 3. Run the project: `pnpm dev`
 4. Access Mastra Studio at `http://localhost:4111`
@@ -90,65 +119,72 @@ Specialized agent for deep financial statement analysis and valuation.
 ```
 src/mastra/
 ├── agents/
-│   ├── index.ts                  # Weather Agent
+│   ├── master-analyst.ts         # Master Research Analyst (orchestrator)
 │   ├── analyst-agent.ts          # Equity Research Analyst
-│   └── fundamental-analyst.ts    # Fundamental Analyst
+│   ├── fundamental-analyst.ts    # Fundamental Analyst
+│   ├── sentiment-analyst.ts      # Sentiment Analyst
+│   └── risk-analyst.ts           # Risk Analyst
 ├── tools/
-│   ├── index.ts                  # Weather tools
-│   ├── equity-tools.ts           # Stock market tools
-│   └── fundamental-tools.ts      # Financial statement tools
+│   ├── equity-tools.ts           # Stock price, financials, news
+│   ├── fundamental-tools.ts      # Financial statements, ratios
+│   ├── sentiment-tools.ts        # Analyst ratings, insider trading
+│   └── risk-tools.ts             # Beta, drawdowns, short interest
 ├── workflows/
-│   ├── index.ts                  # Weather workflow
-│   ├── equity-workflow.ts        # Equity analysis workflow
-│   └── valuation-workflows.ts    # DCF & comparable analysis
+│   ├── full-research-workflow.ts # Complete research pipeline
+│   ├── equity-workflow.ts        # Quick equity analysis
+│   ├── valuation-workflows.ts    # DCF & comparable analysis
+│   ├── sentiment-workflow.ts     # Sentiment analysis pipeline
+│   └── risk-workflow.ts          # Risk assessment pipeline
+├── lib/
+│   └── dcf-calculator.ts         # Quantitative DCF calculations
 └── index.ts                      # Main Mastra configuration
 ```
 
 ## Example Usage
 
-### Weather Agent
+### Master Analyst (Comprehensive Research)
 ```
-User: "What's the weather in Orlando?"
-Agent: Uses weatherTool → Provides current conditions
+User: "Deep dive on AAPL"
+Agent: Runs fullResearchWorkflow → Complete research report + investment thesis
 
-User: "What should I do there today?"
-Agent: Uses planActivitiesTool → Suggests activities based on weather
-```
+User: "Analyze MSFT"
+Agent: Standard analysis → Scores + recommendation + bull/bear cases
 
-### Equity Research Analyst
-```
-User: "Analyze AAPL"
-Agent: Runs equityAnalysisWorkflow → Comprehensive analysis
-
-User: "What's the current price of MSFT?"
-Agent: Uses getStockPriceTool → Returns real-time price data
-
-User: "Get financial metrics for GOOGL"
-Agent: Uses getFinancialsTool → Returns P/E, margins, growth rates
+User: "Quick look at GOOGL"
+Agent: Quick overview → Price, key metrics, recent news summary
 ```
 
-### Fundamental Analyst
+### Fundamental Analysis
 ```
-User: "Analyze AAPL's financial statements"
-Agent: Uses income statement, balance sheet, cash flow tools → Deep financial analysis
-
 User: "What's TSLA's intrinsic value?"
-Agent: Runs dcfValuationWorkflow → DCF valuation with fair value estimate
+Agent: Runs dcfValuationWorkflow → DCF with bear/base/bull scenarios
 
-User: "Compare NVDA's valuation to its peers"
-Agent: Runs comparableAnalysisWorkflow → Peer comparison analysis
+User: "Compare NVDA to its peers"
+Agent: Runs comparableAnalysisWorkflow → Peer valuation comparison
+```
 
-User: "Get financial ratios for META"
-Agent: Uses getFinancialRatiosTool → Comprehensive ratio analysis
+### Sentiment Analysis
+```
+User: "What do analysts think of META?"
+Agent: Uses analyst ratings + upgrades/downgrades → Sentiment summary
+
+User: "Any insider activity on AMZN?"
+Agent: Uses insider trading tool → Recent insider transactions
+```
+
+### Risk Assessment
+```
+User: "How risky is COIN?"
+Agent: Uses all risk tools → Beta, drawdowns, short interest, risk score
 ```
 
 ## Features
 
-- **Multi-Agent System**: Multiple specialized agents working together
-- **Tool Integration**: External API calls for real-time data
-- **Workflows**: Multi-step processes for complex analyses
+- **Multi-Agent Orchestration**: Master analyst coordinates specialist agents
+- **Parallel Processing**: 9 tools run in parallel for efficiency
+- **Real Calculations**: DCF uses mathematical formulas, not AI estimation
+- **Institutional Quality**: Professional research report format
 - **Memory**: Conversation history and user preferences
-- **Streaming**: Real-time response generation
 - **Type Safety**: Full TypeScript with Zod validation
 
 ## Technologies
@@ -156,6 +192,10 @@ Agent: Uses getFinancialRatiosTool → Comprehensive ratio analysis
 - **Framework**: [Mastra](https://mastra.ai)
 - **Language**: TypeScript
 - **AI Model**: OpenAI GPT-4o
-- **Data APIs**: Open-Meteo (weather), Yahoo Finance (stocks)
+- **Data API**: Yahoo Finance
 - **Storage**: LibSQL (SQLite)
 - **Logging**: Pino
+
+## Data Limitations
+
+Due to Yahoo Finance API changes (Nov 2024), historical multi-year financial statements are no longer available. All tools fetch the latest fiscal period data.

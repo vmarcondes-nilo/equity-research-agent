@@ -1,5 +1,5 @@
 {
-  "name": "weather-agent",
+  "name": "equity-research-agent",
   "version": "1.0.0",
   "main": "index.js",
   "private": true,
@@ -7,10 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "mastra dev"
   },
-  "keywords": [],
+  "keywords": ["equity", "research", "finance", "stock", "analysis", "mastra", "ai-agent"],
   "author": "",
   "license": "ISC",
-  "description": "One Agent, one Workflow and one Tool to bring you the weather in your city.",
+  "description": "Multi-agent equity research system with fundamental, sentiment, and risk analysis.",
   "type": "module",
   "dependencies": {
     "@ai-sdk/openai": "^1.3.24",
