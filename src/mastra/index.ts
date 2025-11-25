@@ -9,12 +9,14 @@ import { sentimentAnalysisWorkflow } from './workflows/sentiment-workflow';
 import { riskAssessmentWorkflow } from './workflows/risk-workflow';
 import { fullResearchWorkflow } from './workflows/full-research-workflow';
 import { portfolioAnalysisWorkflow } from './workflows/portfolio-workflow';
+import { earningsEventWorkflow } from './workflows/earnings-workflow';
 import { analystAgent } from './agents/analyst-agent';
 import { fundamentalAnalyst } from './agents/fundamental-analyst';
 import { sentimentAnalyst } from './agents/sentiment-analyst';
 import { riskAnalyst } from './agents/risk-analyst';
 import { masterAnalyst } from './agents/master-analyst';
 import { portfolioAnalyst } from './agents/portfolio-analyst';
+import { earningsAnalyst } from './agents/earnings-analyst';
 
 export const mastra = new Mastra({
   workflows: {
@@ -25,6 +27,7 @@ export const mastra = new Mastra({
     riskAssessmentWorkflow,
     fullResearchWorkflow,
     portfolioAnalysisWorkflow,
+    earningsEventWorkflow,
   },
   agents: {
     analystAgent,
@@ -33,6 +36,7 @@ export const mastra = new Mastra({
     riskAnalyst,
     masterAnalyst,
     portfolioAnalyst,
+    earningsAnalyst,
   },
   logger: new PinoLogger({
     name: 'Mastra',
