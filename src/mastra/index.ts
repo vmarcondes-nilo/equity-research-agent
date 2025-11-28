@@ -11,6 +11,7 @@ import { fullResearchWorkflow } from './workflows/full-research-workflow';
 import { portfolioAnalysisWorkflow } from './workflows/portfolio-workflow';
 import { earningsEventWorkflow } from './workflows/earnings-workflow';
 import { stockScreenerWorkflow } from './workflows/screener-workflow';
+import { portfolioConstructionWorkflow, monthlyReviewWorkflow } from './workflows/optimizer-workflow';
 import { analystAgent } from './agents/analyst-agent';
 import { fundamentalAnalyst } from './agents/fundamental-analyst';
 import { sentimentAnalyst } from './agents/sentiment-analyst';
@@ -19,6 +20,7 @@ import { masterAnalyst } from './agents/master-analyst';
 import { portfolioAnalyst } from './agents/portfolio-analyst';
 import { earningsAnalyst } from './agents/earnings-analyst';
 import { stockScreenerAgent } from './agents/screener-agent';
+import { portfolioOptimizerAgent } from './agents/optimizer-agent';
 
 export const mastra = new Mastra({
   workflows: {
@@ -31,6 +33,8 @@ export const mastra = new Mastra({
     portfolioAnalysisWorkflow,
     earningsEventWorkflow,
     stockScreenerWorkflow,
+    portfolioConstructionWorkflow,
+    monthlyReviewWorkflow,
   },
   agents: {
     analystAgent,
@@ -41,6 +45,7 @@ export const mastra = new Mastra({
     portfolioAnalyst,
     earningsAnalyst,
     stockScreenerAgent,
+    portfolioOptimizerAgent,
   },
   logger: new PinoLogger({
     name: 'Mastra',
