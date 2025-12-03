@@ -49,6 +49,10 @@ export async function getDbClient(): Promise<any> {
 // ============================================================================
 
 export const SCHEMA_SQL = `
+-- ============================================================================
+-- BASE TABLES (no foreign key dependencies)
+-- ============================================================================
+
 -- Portfolio configuration
 CREATE TABLE IF NOT EXISTS portfolios (
   id TEXT PRIMARY KEY,
@@ -65,65 +69,7 @@ CREATE TABLE IF NOT EXISTS portfolios (
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- Current holdings (with conviction tracking for intelligent portfolio builder)
-CREATE TABLE IF NOT EXISTS holdings (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  portfolio_id TEXT NOT NULL,
-  ticker TEXT NOT NULL,
-  shares REAL NOT NULL,
-  avg_cost REAL NOT NULL,
-  current_price REAL,
-  sector TEXT,
-  conviction_score REAL,
-  conviction_level TEXT CHECK (conviction_level IN ('VERY_HIGH', 'HIGH', 'MODERATE', 'LOW', 'VERY_LOW') OR conviction_level IS NULL),
-  last_analysis_id INTEGER,
-  last_analysis_date TEXT,
-  acquired_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-  FOREIGN KEY (portfolio_id) REFERENCES portfolios(id),
-  FOREIGN KEY (last_analysis_id) REFERENCES stock_analyses(id),
-  UNIQUE(portfolio_id, ticker)
-);
-
--- Transaction history (with analysis reference for intelligent portfolio builder)
-CREATE TABLE IF NOT EXISTS transactions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  portfolio_id TEXT NOT NULL,
-  ticker TEXT NOT NULL,
-  action TEXT NOT NULL CHECK (action IN ('BUY', 'SELL')),
-  shares REAL NOT NULL,
-  price REAL NOT NULL,
-  total_value REAL NOT NULL,
-  reason TEXT,
-  score_at_trade REAL,
-  analysis_id INTEGER,
-  screening_run_id TEXT,
-  executed_at TEXT NOT NULL DEFAULT (datetime('now')),
-  FOREIGN KEY (portfolio_id) REFERENCES portfolios(id),
-  FOREIGN KEY (analysis_id) REFERENCES stock_analyses(id),
-  FOREIGN KEY (screening_run_id) REFERENCES screening_runs(id)
-);
-
--- Monthly portfolio snapshots
-CREATE TABLE IF NOT EXISTS snapshots (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  portfolio_id TEXT NOT NULL,
-  snapshot_date TEXT NOT NULL,
-  total_value REAL NOT NULL,
-  cash_value REAL NOT NULL,
-  holdings_value REAL NOT NULL,
-  holdings_count INTEGER NOT NULL,
-  period_return_pct REAL,
-  cumulative_return_pct REAL,
-  spy_period_return_pct REAL,
-  spy_cumulative_return_pct REAL,
-  alpha_pct REAL,
-  holdings_data TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  FOREIGN KEY (portfolio_id) REFERENCES portfolios(id)
-);
-
--- Stock scores for analysis
+-- Stock scores for analysis (no foreign keys)
 CREATE TABLE IF NOT EXISTS stock_scores (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   ticker TEXT NOT NULL,
@@ -148,6 +94,7 @@ CREATE TABLE IF NOT EXISTS stock_scores (
 
 -- ============================================================================
 -- INTELLIGENT PORTFOLIO BUILDER TABLES
+-- These must be created before holdings/transactions which reference them
 -- ============================================================================
 
 -- Screening runs: Track each portfolio construction/review run
@@ -260,6 +207,69 @@ CREATE TABLE IF NOT EXISTS triage_decisions (
   decided_at TEXT NOT NULL DEFAULT (datetime('now')),
 
   FOREIGN KEY (screening_run_id) REFERENCES screening_runs(id)
+);
+
+-- ============================================================================
+-- TABLES WITH FOREIGN KEY DEPENDENCIES
+-- These reference screening_runs and stock_analyses, so must be created after
+-- ============================================================================
+
+-- Current holdings (with conviction tracking for intelligent portfolio builder)
+CREATE TABLE IF NOT EXISTS holdings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  portfolio_id TEXT NOT NULL,
+  ticker TEXT NOT NULL,
+  shares REAL NOT NULL,
+  avg_cost REAL NOT NULL,
+  current_price REAL,
+  sector TEXT,
+  conviction_score REAL,
+  conviction_level TEXT CHECK (conviction_level IN ('VERY_HIGH', 'HIGH', 'MODERATE', 'LOW', 'VERY_LOW') OR conviction_level IS NULL),
+  last_analysis_id INTEGER,
+  last_analysis_date TEXT,
+  acquired_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (portfolio_id) REFERENCES portfolios(id),
+  FOREIGN KEY (last_analysis_id) REFERENCES stock_analyses(id),
+  UNIQUE(portfolio_id, ticker)
+);
+
+-- Transaction history (with analysis reference for intelligent portfolio builder)
+CREATE TABLE IF NOT EXISTS transactions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  portfolio_id TEXT NOT NULL,
+  ticker TEXT NOT NULL,
+  action TEXT NOT NULL CHECK (action IN ('BUY', 'SELL')),
+  shares REAL NOT NULL,
+  price REAL NOT NULL,
+  total_value REAL NOT NULL,
+  reason TEXT,
+  score_at_trade REAL,
+  analysis_id INTEGER,
+  screening_run_id TEXT,
+  executed_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (portfolio_id) REFERENCES portfolios(id),
+  FOREIGN KEY (analysis_id) REFERENCES stock_analyses(id),
+  FOREIGN KEY (screening_run_id) REFERENCES screening_runs(id)
+);
+
+-- Monthly portfolio snapshots
+CREATE TABLE IF NOT EXISTS snapshots (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  portfolio_id TEXT NOT NULL,
+  snapshot_date TEXT NOT NULL,
+  total_value REAL NOT NULL,
+  cash_value REAL NOT NULL,
+  holdings_value REAL NOT NULL,
+  holdings_count INTEGER NOT NULL,
+  period_return_pct REAL,
+  cumulative_return_pct REAL,
+  spy_period_return_pct REAL,
+  spy_cumulative_return_pct REAL,
+  alpha_pct REAL,
+  holdings_data TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (portfolio_id) REFERENCES portfolios(id)
 );
 
 -- ============================================================================
